@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Mobile‑friendly Waist‑to‑Hip Ratio (WHR) Calculator
+Mobile-friendly Waist-to-Hip Ratio (WHR) Calculator
 ===================================================
 One-file Streamlit web app optimized for phones:
 - Big touch-friendly sliders (minimal typing)
-- cm/inch toggle with automatic conversion
+- cm/in toggle with automatic conversion
 - Live classification using WHO thresholds
+- Manual entry boxes for precise values (no +/- buttons)
 - On-page measuring guide and tips
 Run:  streamlit run whr_app_mobile.py
 """
 
-import math
 import streamlit as st
 
 # ---------------------------
@@ -35,8 +35,8 @@ st.markdown(
 
 st.title("📱 WHR Calculator (Mobile)")
 st.write(
-    "Estimate your **Waist‑to‑Hip Ratio (WHR)** and WHO risk category. "
-    "Use the unit toggle below — sliders adapt automatically."
+    "Estimate your **Waist-to-Hip Ratio (WHR)** and WHO risk category. "
+    "Use the unit toggle below — sliders and inputs adapt automatically."
 )
 
 # ---------------------------
@@ -85,7 +85,7 @@ with st.sidebar:
     )
 
 # ---------------------------
-# Inputs (touch‑friendly)
+# Inputs (touch-friendly)
 # ---------------------------
 col1, col2 = st.columns(2)
 with col1:
@@ -101,13 +101,14 @@ else:
     waist_min, waist_max, waist_step = cm_to_in(50.0), cm_to_in(150.0), 0.25
     hip_min, hip_max, hip_step = cm_to_in(70.0), cm_to_in(170.0), 0.25
 
-st.subheader("Measurements")
+st.subheader("Measurements (use sliders or type exact values)")
 waist = st.slider(
     f"Waist ({unit})",
     min_value=float(waist_min),
     max_value=float(waist_max),
     value=float((waist_min + waist_max) / 2),
     step=float(waist_step),
+    key="waist_slider",
 )
 hip = st.slider(
     f"Hips ({unit})",
@@ -115,22 +116,38 @@ hip = st.slider(
     max_value=float(hip_max),
     value=float((hip_min + hip_max) / 2),
     step=float(hip_step),
+    key="hip_slider",
 )
 
-# Optional quick nudge buttons for fine adjustment
-c1, c2, c3, c4 = st.columns(4)
+# Manual entry boxes for precision input (replace +/- buttons)
+st.subheader("Manual entry (optional)")
+c1, c2 = st.columns(2)
 with c1:
-    if st.button("− Waist"):
-        waist = max(waist_min, waist - waist_step)
+    waist_manual = st.number_input(
+        f"Waist ({unit})",
+        min_value=float(waist_min),
+        max_value=float(waist_max),
+        value=float(waist),
+        step=float(waist_step),
+        key="waist_manual",
+        help="Type exact measurement if preferred."
+    )
 with c2:
-    if st.button("+ Waist"):
-        waist = min(waist_max, waist + waist_step)
-with c3:
-    if st.button("− Hips"):
-        hip = max(hip_min, hip - hip_step)
-with c4:
-    if st.button("+ Hips"):
-        hip = min(hip_max, hip + hip_step)
+    hip_manual = st.number_input(
+        f"Hips ({unit})",
+        min_value=float(hip_min),
+        max_value=float(hip_max),
+        value=float(hip),
+        step=float(hip_step),
+        key="hip_manual",
+        help="Type exact measurement if preferred."
+    )
+
+# Use manual values if changed
+if waist_manual != waist:
+    waist = waist_manual
+if hip_manual != hip:
+    hip = hip_manual
 
 # ---------------------------
 # Compute & display
@@ -161,7 +178,7 @@ else:
     with mcol3:
         st.metric("Inputs", f"{sex} • {unit}")
 
-    # Traffic‑light style messages
+    # Traffic-light style messages
     if category == "Low risk":
         st.success(
             "Your WHR indicates **low cardiometabolic risk** and a favourable fat distribution pattern."
@@ -180,7 +197,7 @@ else:
         st.write(
             "- WHR captures **fat distribution**: abdominal vs hip/thigh.\n"
             "- Even with a normal BMI, a **higher WHR** increases risk.\n"
-            "- Re‑measure a few times and use the **average** for accuracy."
+            "- Re-measure a few times and use the **average** for accuracy."
         )
 
 st.caption("This tool does not diagnose disease. For concerns, seek medical advice.")
